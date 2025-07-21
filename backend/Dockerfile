@@ -2,10 +2,14 @@ FROM gradle:8.4-jdk17 AS build
 WORKDIR /app
 # Copy entire project
 COPY . .
+# Check if gradlew exists, if not generate it
+RUN if [ ! -f "gradlew" ]; then \
+        gradle wrapper --gradle-version 8.4; \
+    fi
 # Make sure the gradle wrapper is executable
-RUN chmod +x gradlew
-# Build the application
-RUN ./gradlew bootJar --no-daemon
+RUN chmod +x gradlew || echo "gradlew not found, trying to proceed anyway"
+# Build the application with gradle directly if wrapper fails
+RUN ./gradlew bootJar --no-daemon || gradle bootJar --no-daemon
 
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
