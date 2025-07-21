@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: finance-monkey-backend
+    env: docker
+    plan: free
+    autoDeploy: true
+    dockerfilePath: backend/Dockerfile
+    envVars:
+      - key: DB_URL
+        fromDatabase: finance-monkey-db
+        property: connectionString
+      - key: DB_USERNAME
+        fromDatabase: finance-monkey-db
+        property: user
+      - key: DB_PASSWORD
+        fromDatabase: finance-monkey-db
+        property: password
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+    healthCheckPath: /api/actuator/health
+    env: 
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+  - type: postgres
+    name: finance-monkey-db
+    plan: free
+    databaseName: finance_monkey
+    user: postgres

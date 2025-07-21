@@ -1,0 +1,15 @@
+# Sensitive environment variables - do not commit!
+.env
+
+# Build output
+/backend/build/
+/frontend/.next/
+/frontend/out/
+
+# Node.js dependencies
+/frontend/node_modules/
+
+# IDE files
+.idea/
+.vscode/
+*.iml

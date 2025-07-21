@@ -1,0 +1,58 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/finance_monkey}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+security:
+  jwt:
+    token:
+      secret-key: ${JWT_SECRET:verySecretKeyThatShouldBeChangedInProduction}
+      expire-length: 3600000 # 1 hour in milliseconds
+
+email:
+  processing:
+    schedule: "0 */30 * * * *" # Every 30 minutes
+    batch-size: 50
+    max-retries: 3
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:your-gemini-api-key}
+  project: ${GEMINI_PROJECT:finance-monkey}
+  location: ${GEMINI_LOCATION:us-central1}
+
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+    client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/google}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.financeMonkey: DEBUG
