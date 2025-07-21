@@ -31,6 +31,28 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Deployment Steps
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Create a Vercel Account**:
+   - Visit [Vercel](https://vercel.com) and sign up or log in
+
+2. **Connect to GitHub**:
+   - Import your Finance Monkey repository from GitHub
+   - Select the frontend directory as the root directory for deployment
+
+3. **Configure Environment Variables**:
+   - Add the following environment variables in the Vercel project settings:
+     - `NEXT_PUBLIC_API_URL`: Your backend API URL (e.g., https://finance-monkey-backend.onrender.com/api)
+     - `NEXTAUTH_URL`: Your frontend URL (e.g., https://finance-monkey.vercel.app)
+     - `NEXTAUTH_SECRET`: A secure random string for NextAuth.js
+     - Any other environment variables needed by your frontend
+
+4. **Deploy**:
+   - Click "Deploy" and Vercel will automatically build and deploy your frontend
+   - The vercel.json file in this directory contains the configuration for your deployment
+
+### Important Notes
+
+- Make sure the backend is deployed and accessible before deploying the frontend
+- Update the CORS configuration in your backend to allow requests from your Vercel domain
+- The frontend communicates with the backend API through the URL specified in `NEXT_PUBLIC_API_URL`
