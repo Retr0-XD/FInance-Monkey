@@ -19,6 +19,8 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "https://repo.spring.io/snapshot" }
 }
 
 dependencies {
@@ -47,9 +49,16 @@ dependencies {
 	implementation 'com.google.apis:google-api-services-gmail:v1-rev20220404-2.0.0'
 	
 	// Google Generative AI (Gemini)
-	implementation 'com.google.cloud:google-cloud-aiplatform:3.22.0'
+	implementation 'com.google.cloud:google-cloud-aiplatform:3.20.0'
 	implementation 'com.google.cloud:google-cloud-core:2.20.0'
-	implementation 'com.google.generativeai:generativeai:0.3.0'
+	
+	// Force a specific version of Guava to resolve conflicts
+	implementation(platform("com.google.guava:guava-bom:32.1.2-jre"))
+	implementation("com.google.guava:guava")
+	
+	// Use langchain4j instead of direct generativeai dependency
+	implementation 'dev.langchain4j:langchain4j:0.24.0'
+	implementation 'dev.langchain4j:langchain4j-google-genai:0.24.0'
 	
 	// JSON processing
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'

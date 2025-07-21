@@ -1,9 +1,17 @@
-FROM gradle:7.6.1-jdk17 AS build
+FROM gradle:8.4-jdk17 AS build
 WORKDIR /app
-COPY . .
-RUN gradle clean build -x test --no-daemon
+# Copy just the build files first for better caching
+COPY build.gradle settings.gradle ./
+COPY gradle ./gradle
+# Pre-download dependencies
+RUN gradle dependencies --no-daemon
 
-FROM eclipse-temurin:17-jre
+# Now copy the source code
+COPY src ./src
+# Build the application
+RUN gradle bootJar --no-daemon
+
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
