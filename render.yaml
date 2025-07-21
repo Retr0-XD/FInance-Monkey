@@ -29,8 +29,8 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
-  - type: postgresql
-    name: finance-monkey-db
-    plan: free
+databases:
+  - name: finance-monkey-db
     databaseName: finance_monkey
     user: postgres
+    plan: free
