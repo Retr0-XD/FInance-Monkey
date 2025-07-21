@@ -8,20 +8,13 @@ services:
     healthCheckPath: /api/actuator/health
     envVars:
       - key: DB_URL
-        fromService:
-          type: database
+        fromDatabase:
           name: finance-monkey-db
           property: connectionString
       - key: DB_USERNAME
-        fromService:
-          type: database
-          name: finance-monkey-db
-          property: user
+        value: ${DB_USERNAME}
       - key: DB_PASSWORD
-        fromService:
-          type: database
-          name: finance-monkey-db
-          property: password
+        value: ${DB_PASSWORD}
       - key: JWT_SECRET
         sync: false
       - key: GEMINI_API_KEY
@@ -38,5 +31,4 @@ services:
 databases:
   - name: finance-monkey-db
     databaseName: finance_monkey
-    user: postgres
-    plan: free
+    ipAllowList: []
