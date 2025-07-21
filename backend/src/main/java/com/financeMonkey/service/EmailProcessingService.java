@@ -146,7 +146,7 @@ public class EmailProcessingService {
             // List messages matching query
             ListMessagesResponse listResponse = service.users().messages()
                 .list("me")
-                .setMaxResults(batchSize)
+                .setMaxResults((long)batchSize)
                 .setQ(query)
                 .execute();
                 
@@ -270,8 +270,6 @@ public class EmailProcessingService {
             return content;
         }
     }
-    
-    private final CategoryRepository categoryRepository;
     
     private void processEmail(EmailAccount account, String messageId, String subject, String content) {
         // Check if we've already processed this email
