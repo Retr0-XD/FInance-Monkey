@@ -5,6 +5,7 @@ services:
     plan: free
     autoDeploy: true
     dockerfilePath: backend/Dockerfile
+    healthCheckPath: /api/actuator/health
     envVars:
       - key: DB_URL
         fromDatabase: finance-monkey-db
@@ -25,12 +26,10 @@ services:
         sync: false
       - key: GOOGLE_REDIRECT_URI
         sync: false
-    healthCheckPath: /api/actuator/health
-    envVars: 
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
-  - type: postgres
+  - type: postgresql
     name: finance-monkey-db
     plan: free
     databaseName: finance_monkey
