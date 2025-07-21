@@ -56,9 +56,9 @@ dependencies {
 	implementation(platform("com.google.guava:guava-bom:32.1.2-jre"))
 	implementation("com.google.guava:guava")
 	
-	// Use langchain4j instead of direct generativeai dependency
-	implementation 'dev.langchain4j:langchain4j:0.24.0'
-	implementation 'dev.langchain4j:langchain4j-google-genai:0.24.0'
+	// Use Google's vertex AI and generative AI libraries
+	implementation 'com.google.cloud:google-cloud-vertexai:0.5.0'
+	implementation 'io.grpc:grpc-netty-shaded:1.59.0'
 	
 	// JSON processing
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
