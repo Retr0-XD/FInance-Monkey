@@ -1,14 +1,9 @@
 FROM gradle:8.4-jdk17 AS build
 WORKDIR /app
-# Copy gradle configuration files first for better layer caching
-COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
-# Copy the gradle wrapper
-COPY gradlew ./
+# Copy entire project
+COPY . .
 # Make sure the gradle wrapper is executable
 RUN chmod +x gradlew
-# Copy source code
-COPY src ./src
 # Build the application
 RUN ./gradlew bootJar --no-daemon
 

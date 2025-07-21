@@ -4,7 +4,8 @@ services:
     env: docker
     plan: free
     autoDeploy: true
-    dockerfilePath: backend/Dockerfile
+    dockerfilePath: ./Dockerfile
+    buildDirectory: backend
     healthCheckPath: /api/actuator/health
     envVars:
       - key: DB_URL
