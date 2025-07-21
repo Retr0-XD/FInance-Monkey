@@ -67,7 +67,8 @@ public class GeminiAIService {
                 GenerativeModel model = new GenerativeModel("gemini-1.5-pro", vertexAI);
                 
                 // Generate a response from Gemini
-                String response = model.generateContent(prompt).getCandidates().get(0).getContent().getParts().get(0).getText();
+                GenerateContentResponse contentResponse = model.generateContent(prompt);
+                String response = contentResponse.getCandidates(0).getContent().getParts(0).getText();
                 log.debug("Gemini API response: {}", response);
                 
                 // Parse the JSON response
