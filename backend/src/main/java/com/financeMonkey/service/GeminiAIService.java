@@ -2,8 +2,8 @@ package com.financeMonkey.service;
 
 import com.financeMonkey.service.EmailProcessingService.TransactionInfo;
 import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.cloud.vertexai.generativeai.ResponseHandler;
+import com.google.cloud.vertexai.api.*;
+import java.util.Collections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,15 +64,33 @@ public class GeminiAIService {
             
             // Initialize Vertex AI with the Gemini model
             try (VertexAI vertexAI = new VertexAI(projectId, location)) {
-                GenerativeModel model = new GenerativeModel("gemini-1.5-pro", vertexAI);
+                // Create a PredictionServiceClient
+                PredictionServiceClient predictionClient = vertexAI.getPredictionServiceClient();
+
+                // Create content with the prompt
+                Content content = Content.newBuilder()
+                    .addParts(Part.newBuilder().setText(prompt).build())
+                    .build();
                 
-                // Generate a response from Gemini
-                GenerateContentResponse contentResponse = model.generateContent(prompt);
-                String response = contentResponse.getCandidates(0).getContent().getParts(0).getText();
-                log.debug("Gemini API response: {}", response);
+                // Build the request
+                GenerateContentRequest request = GenerateContentRequest.newBuilder()
+                    .setModel("projects/" + projectId + "/locations/" + location + "/publishers/google/models/gemini-1.5-pro")
+                    .addContents(content)
+                    .build();
+                
+                // Generate content
+                GenerateContentResponse response = predictionClient.generateContent(request);
+                
+                // Extract the text from the response
+                String responseText = "";
+                if (response.getCandidatesCount() > 0 && 
+                    response.getCandidates(0).getContent().getPartsCount() > 0) {
+                    responseText = response.getCandidates(0).getContent().getParts(0).getText();
+                }
+                log.debug("Gemini API response: {}", responseText);
                 
                 // Parse the JSON response
-                return parseGeminiResponse(response);
+                return parseGeminiResponse(responseText);
             }
         } catch (Exception e) {
             log.error("Error processing with Gemini AI, falling back to basic extraction", e);
