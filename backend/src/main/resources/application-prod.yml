@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/finance_monkey}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -10,8 +10,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+        format_sql: false
+    show-sql: false
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -24,7 +24,7 @@ server:
 security:
   jwt:
     token:
-      secret-key: ${JWT_SECRET:verySecretKeyThatShouldBeChangedInProduction}
+      secret-key: ${JWT_SECRET}
       expire-length: 3600000 # 1 hour in milliseconds
 
 email:
@@ -35,15 +35,15 @@ email:
 
 gemini:
   api:
-    key: ${GEMINI_API_KEY:your-gemini-api-key}
+    key: ${GEMINI_API_KEY}
   project: ${GEMINI_PROJECT:finance-monkey}
   location: ${GEMINI_LOCATION:us-central1}
 
 google:
   oauth:
-    client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
-    client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
-    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/google}
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 springdoc:
   api-docs:
@@ -59,9 +59,11 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
       
 logging:
   level:
-    org.springframework.security: INFO
-    com.financeMonkey: DEBUG
+    org.springframework.security: WARN
+    com.financeMonkey: INFO
+  file:
+    name: /var/log/finance-monkey.log
