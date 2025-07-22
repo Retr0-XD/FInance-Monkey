@@ -1,5 +1,6 @@
 spring:
   datasource:
+    # Using Render's DATABASE_URL environment variable directly
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
   jpa:
