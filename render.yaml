@@ -8,14 +8,8 @@ services:
     rootDir: backend
     healthCheckPath: /api/actuator/health
     envVars:
-      - key: DB_URL
-        fromDatabase:
-          name: finance-monkey-db
-          property: connectionString
-      - key: DB_USERNAME
-        value: ${DB_USERNAME}
-      - key: DB_PASSWORD
-        value: ${DB_PASSWORD}
+      # PostgreSQL environment variables will be set automatically by Render
+      # We only need to set other environment variables
       - key: JWT_SECRET
         sync: false
       - key: GEMINI_API_KEY
@@ -28,6 +22,8 @@ services:
         sync: false
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+      - key: PORT
+        value: 10000
 
 databases:
   - name: finance-monkey-db

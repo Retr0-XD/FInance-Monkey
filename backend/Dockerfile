@@ -10,9 +10,11 @@ RUN ls -la /app && ls -la /app/src || echo "Error listing files, continuing anyw
 RUN cd /app && gradle bootJar --no-daemon --info
 
 FROM eclipse-temurin:17-jre-jammy
+# Install curl for health check
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
-# Adding health check
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8080/api/actuator/health || exit 1
-EXPOSE 8080
+# Adding health check with correct port
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:10000/api/actuator/health || exit 1
+EXPOSE 10000
 ENTRYPOINT ["java", "-jar", "app.jar"]
