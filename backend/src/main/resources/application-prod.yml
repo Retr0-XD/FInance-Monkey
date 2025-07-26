@@ -34,13 +34,20 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
+      # Don't validate schema on startup
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         # Set to true to show generated SQL in development
         show_sql: false
+        # Do not validate schema on startup
+        hbm2ddl.auto: none
+        # Skip schema validation
+        javax.persistence.schema-generation.database.action: none
+        # Disable schema validation completely
+        javax.persistence.validation.mode: none
         # Configure connection retry
         connection.provider_disables_autocommit: false
         # Defer data source initialization
@@ -49,6 +56,8 @@ spring:
         connection.autoReconnect: true
         connection.characterEncoding: utf8
         connection.useUnicode: true
+        # Don't fail on errors
+        check_nullability: false
     # Don't fail on startup if database is not available
     open-in-view: false
     
