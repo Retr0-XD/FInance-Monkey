@@ -105,15 +105,26 @@ public class DelayedDatabaseInitConfig {
     
     /**
      * Bean to provide Flyway for manual initialization
-     * Only created if dataSource is available
+     * Only created if dataSource is available and not null
      */
-    @Bean
+    @Bean(required = false)
     @ConditionalOnBean(DataSource.class)
-    @DependsOn("dataSource")
     public Flyway flyway() {
-        return Flyway.configure()
-            .dataSource(dataSource)
-            .baselineOnMigrate(true)
-            .load();
+        if (dataSource == null) {
+            log.warn("DataSource is null, skipping Flyway bean creation");
+            return null;
+        }
+        
+        try {
+            log.info("Creating Flyway bean with existing DataSource");
+            return Flyway.configure()
+                .dataSource(dataSource)
+                .baselineOnMigrate(true)
+                .load();
+        } catch (Exception e) {
+            log.error("Failed to create Flyway bean: {}", e.getMessage());
+            // Return null to avoid application startup failure
+            return null;
+        }
     }
 }

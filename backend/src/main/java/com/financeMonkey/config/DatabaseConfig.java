@@ -113,11 +113,27 @@ public class DatabaseConfig {
             logger.info("Creating HikariCP data source with connection pooling and retry");
             return new HikariDataSource(config);
         } catch (Exception e) {
-            logger.error("Failed to configure database connection", e);
-            logger.error("The application will start but database functionality may be limited", e);
-            // Return null and let Spring's auto-configuration handle it with defaults
-            // This allows the application to start even with database issues
-            return null;
+            logger.error("Failed to configure database connection: {}", e.getMessage());
+            
+            if (e instanceof java.net.UnknownHostException) {
+                logger.error("DNS resolution failed for database host. Using dummy DataSource to allow application to start.");
+            } else {
+                logger.error("Database connection failed. Using dummy DataSource to allow application to start.");
+            }
+            
+            // Create a dummy datasource that will always fail but won't be null
+            // This allows the application to start without throwing NPEs
+            return new org.springframework.jdbc.datasource.DriverManagerDataSource() {
+                @Override
+                public java.sql.Connection getConnection() throws java.sql.SQLException {
+                    throw new java.sql.SQLException("Database connection not available. Application running in limited mode.");
+                }
+                
+                @Override
+                public java.sql.Connection getConnection(String username, String password) throws java.sql.SQLException {
+                    throw new java.sql.SQLException("Database connection not available. Application running in limited mode.");
+                }
+            };
         }
     }
 }
