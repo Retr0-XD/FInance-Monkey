@@ -19,8 +19,8 @@ COPY --from=build /app/build/libs/*.jar app.jar
 RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo 'set -e' >> /app/entrypoint.sh && \
     echo 'echo "Waiting for database to be ready..."' >> /app/entrypoint.sh && \
-    echo 'DATABASE_HOST=$(echo ${DATABASE_URL} | sed -n "s/^.*@\\([^:]*\\).*$/\\1/p")' >> /app/entrypoint.sh && \
-    echo 'DATABASE_PORT=$(echo ${DATABASE_URL} | sed -n "s/^.*:\\([0-9]*\\)\\/.*$/\\1/p")' >> /app/entrypoint.sh && \
+    echo 'DATABASE_HOST=$(echo "$DATABASE_URL" | awk -F[@:/] "{print \$4}")' >> /app/entrypoint.sh && \
+    echo 'DATABASE_PORT=$(echo "$DATABASE_URL" | awk -F[:/] "{if (NF>5) print \$5; else print 5432}")' >> /app/entrypoint.sh && \
     echo 'if [ -z "$DATABASE_PORT" ]; then DATABASE_PORT=5432; fi' >> /app/entrypoint.sh && \
     echo 'echo "Checking connection to $DATABASE_HOST:$DATABASE_PORT"' >> /app/entrypoint.sh && \
     echo 'count=0' >> /app/entrypoint.sh && \
