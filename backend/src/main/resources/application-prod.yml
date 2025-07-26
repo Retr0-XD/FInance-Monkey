@@ -1,9 +1,7 @@
 spring:
-  datasource:
-    # Using Render's DATABASE_URL environment variable directly
-    url: ${DATABASE_URL}
-    driver-class-name: org.postgresql.Driver
+  # Datasource configuration is handled by DatabaseConfig.java
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
     properties:
@@ -14,6 +12,9 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    datasource:
+      # Ensure Flyway uses the same datasource as the application
+      primary: true
 
 server:
   port: ${PORT:10000}
