@@ -19,13 +19,21 @@ COPY --from=build /app/build/libs/*.jar app.jar
 RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo 'set -e' >> /app/entrypoint.sh && \
     echo 'echo "Waiting for database to be ready..."' >> /app/entrypoint.sh && \
-    echo 'DATABASE_HOST=$(echo "$DATABASE_URL" | awk -F[@:/] "{print \$4}")' >> /app/entrypoint.sh && \
-    echo 'DATABASE_PORT=$(echo "$DATABASE_URL" | awk -F[:/] "{if (NF>5) print \$5; else print 5432}")' >> /app/entrypoint.sh && \
-    echo 'if [ -z "$DATABASE_PORT" ]; then DATABASE_PORT=5432; fi' >> /app/entrypoint.sh && \
-    echo 'echo "Checking connection to $DATABASE_HOST:$DATABASE_PORT"' >> /app/entrypoint.sh && \
+    echo 'echo "DATABASE_URL format: ${DATABASE_URL}"' >> /app/entrypoint.sh && \
+    echo 'url="${DATABASE_URL}"' >> /app/entrypoint.sh && \
+    echo 'temp_url=${url#*@}' >> /app/entrypoint.sh && \
+    echo 'host_part=${temp_url%%/*}' >> /app/entrypoint.sh && \
+    echo 'if [ "${host_part#*:}" != "${host_part}" ]; then' >> /app/entrypoint.sh && \
+    echo '  DATABASE_HOST=${host_part%%:*}' >> /app/entrypoint.sh && \
+    echo '  DATABASE_PORT=${host_part#*:}' >> /app/entrypoint.sh && \
+    echo 'else' >> /app/entrypoint.sh && \
+    echo '  DATABASE_HOST=${host_part}' >> /app/entrypoint.sh && \
+    echo '  DATABASE_PORT=5432' >> /app/entrypoint.sh && \
+    echo 'fi' >> /app/entrypoint.sh && \
+    echo 'echo "Extracted host: $DATABASE_HOST, port: $DATABASE_PORT"' >> /app/entrypoint.sh && \
     echo 'count=0' >> /app/entrypoint.sh && \
     echo 'max=30' >> /app/entrypoint.sh && \
-    echo 'while ! nc -z $DATABASE_HOST $DATABASE_PORT && [ $count -lt $max ]; do' >> /app/entrypoint.sh && \
+    echo 'while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT" && [ $count -lt $max ]; do' >> /app/entrypoint.sh && \
     echo '  echo "Waiting for database connection... ($count/$max)"' >> /app/entrypoint.sh && \
     echo '  sleep 2' >> /app/entrypoint.sh && \
     echo '  count=$((count+1))' >> /app/entrypoint.sh && \
