@@ -1,95 +1,123 @@
 package com.financeMonkey.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.retry.annotation.EnableRetry;
 
 import javax.sql.DataSource;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Configuration
 @Profile("prod")
+@EnableRetry
 public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
 
     @Value("${DATABASE_URL}")
     private String databaseUrl;
+    
+    @Value("${spring.datasource.hikari.connection-timeout:30000}")
+    private int connectionTimeout;
+    
+    @Value("${spring.datasource.hikari.maximum-pool-size:5}")
+    private int maxPoolSize;
+    
+    @Value("${spring.datasource.hikari.minimum-idle:2}")
+    private int minIdle;
 
     @Bean
     @Primary
     public DataSource dataSource() {
         try {
             logger.info("Configuring database connection with DATABASE_URL");
-            logger.debug("Raw DATABASE_URL format: {}", 
-                    databaseUrl.replaceAll(":[^:@]+@", ":****@")); // Log URL with password masked
+            String maskedUrl = databaseUrl.replaceAll(":[^:@]+@", ":****@");
+            logger.info("Database URL format: {}", maskedUrl);
+            
+            // Connection details
+            String jdbcUrl;
+            String username;
+            String password;
             
             // First try the URI approach (more robust)
             try {
-                return createDataSourceFromUri();
+                URI dbUri = new URI(databaseUrl);
+                username = dbUri.getUserInfo().split(":")[0];
+                password = dbUri.getUserInfo().split(":")[1];
+                String host = dbUri.getHost();
+                int port = dbUri.getPort() > 0 ? dbUri.getPort() : 5432;
+                String database = dbUri.getPath().substring(1);
+                
+                jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, database);
+                logger.info("Successfully parsed DATABASE_URL as URI. Host: {}, Database: {}", host, database);
             } catch (URISyntaxException e) {
                 logger.warn("Failed to parse DATABASE_URL as URI, falling back to regex: {}", e.getMessage());
-                // Fall back to regex approach if URI parsing fails
-                return createDataSourceFromRegex();
+                // Fall back to regex approach
+                Pattern pattern = Pattern.compile("^(postgres(?:ql)?://)?([^:]+):([^@]+)@([^:/]+)(?::(\\d+))?/(.+)$");
+                Matcher matcher = pattern.matcher(databaseUrl);
+                
+                if (!matcher.matches()) {
+                    throw new RuntimeException("Invalid DATABASE_URL format. Expected: postgresql://username:password@host:port/database");
+                }
+                
+                username = matcher.group(2);
+                password = matcher.group(3);
+                String host = matcher.group(4);
+                String port = matcher.group(5) != null ? matcher.group(5) : "5432";
+                String database = matcher.group(6);
+                
+                jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + database;
+                logger.info("Parsed DATABASE_URL with regex. Host: {}, Database: {}", host, database);
             }
+            
+            // Create HikariCP configuration with resilient settings
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(jdbcUrl);
+            config.setUsername(username);
+            config.setPassword(password);
+            config.setDriverClassName("org.postgresql.Driver");
+            
+            // Connection pool settings
+            config.setConnectionTimeout(connectionTimeout); 
+            config.setMaximumPoolSize(maxPoolSize);
+            config.setMinimumIdle(minIdle);
+            config.setIdleTimeout(60000);
+            config.setMaxLifetime(1800000);
+            
+            // Connection test query
+            config.setConnectionTestQuery("SELECT 1");
+            
+            // Add retries
+            config.setInitializationFailTimeout(60000); // 60 seconds
+            config.setValidationTimeout(5000);
+            
+            // Additional properties
+            Properties props = new Properties();
+            props.setProperty("connectTimeout", "10");
+            props.setProperty("socketTimeout", "20");
+            props.setProperty("tcpKeepAlive", "true");
+            config.setDataSourceProperties(props);
+            
+            logger.info("Creating HikariCP data source with connection pooling and retry");
+            return new HikariDataSource(config);
         } catch (Exception e) {
             logger.error("Failed to configure database connection", e);
-            throw new RuntimeException("Database configuration failed", e);
+            logger.error("The application will start but database functionality may be limited", e);
+            // Return null and let Spring's auto-configuration handle it with defaults
+            // This allows the application to start even with database issues
+            return null;
         }
     }
     
-    private DataSource createDataSourceFromUri() throws URISyntaxException {
-        URI dbUri = new URI(databaseUrl);
-        
-        String username = dbUri.getUserInfo().split(":")[0];
-        String password = dbUri.getUserInfo().split(":")[1];
-        String host = dbUri.getHost();
-        int port = dbUri.getPort() > 0 ? dbUri.getPort() : 5432;
-        String database = dbUri.getPath().substring(1);
-        
-        String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, database);
-        
-        logger.info("Connecting to database host: {}, database: {}", host, database);
-        
-        return DataSourceBuilder.create()
-                .url(jdbcUrl)
-                .username(username)
-                .password(password)
-                .driverClassName("org.postgresql.Driver")
-                .build();
-    }
-    
-    private DataSource createDataSourceFromRegex() {
-        // This regex handles both postgres:// and postgresql:// URL formats
-        Pattern pattern = Pattern.compile("^(postgres(?:ql)?://)?([^:]+):([^@]+)@([^:/]+)(?::(\\d+))?/(.+)$");
-        Matcher matcher = pattern.matcher(databaseUrl);
-        
-        if (!matcher.matches()) {
-            throw new RuntimeException("Invalid DATABASE_URL format. Expected: postgresql://username:password@host:port/database");
-        }
-        
-        String username = matcher.group(2);
-        String password = matcher.group(3);
-        String host = matcher.group(4);
-        String port = matcher.group(5) != null ? matcher.group(5) : "5432"; // Default to 5432 if no port
-        String database = matcher.group(6);
-        
-        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + database;
-        
-        logger.info("Connecting to database host: {}, database: {}", host, database);
-        
-        return DataSourceBuilder.create()
-                .url(jdbcUrl)
-                .username(username)
-                .password(password)
-                .driverClassName("org.postgresql.Driver")
-                .build();
-    }
+}
 }

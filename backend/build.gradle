@@ -38,6 +38,11 @@ dependencies {
 	// JDBC URL Parser for DATABASE_URL environment variable
 	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 	
+	// Connection pooling and retry
+	implementation 'com.zaxxer:HikariCP'
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework:spring-aspects'
+	
 	// Flyway for database migrations
 	implementation 'org.flywaydb:flyway-core'
 	

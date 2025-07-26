@@ -18,31 +18,12 @@ COPY --from=build /app/build/libs/*.jar app.jar
 # Create entrypoint script for proper startup
 RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo 'set -e' >> /app/entrypoint.sh && \
-    echo 'echo "Waiting for database to be ready..."' >> /app/entrypoint.sh && \
-    echo 'echo "DATABASE_URL format: ${DATABASE_URL}"' >> /app/entrypoint.sh && \
-    echo 'url="${DATABASE_URL}"' >> /app/entrypoint.sh && \
-    echo 'temp_url=${url#*@}' >> /app/entrypoint.sh && \
-    echo 'host_part=${temp_url%%/*}' >> /app/entrypoint.sh && \
-    echo 'if [ "${host_part#*:}" != "${host_part}" ]; then' >> /app/entrypoint.sh && \
-    echo '  DATABASE_HOST=${host_part%%:*}' >> /app/entrypoint.sh && \
-    echo '  DATABASE_PORT=${host_part#*:}' >> /app/entrypoint.sh && \
-    echo 'else' >> /app/entrypoint.sh && \
-    echo '  DATABASE_HOST=${host_part}' >> /app/entrypoint.sh && \
-    echo '  DATABASE_PORT=5432' >> /app/entrypoint.sh && \
-    echo 'fi' >> /app/entrypoint.sh && \
-    echo 'echo "Extracted host: $DATABASE_HOST, port: $DATABASE_PORT"' >> /app/entrypoint.sh && \
-    echo 'count=0' >> /app/entrypoint.sh && \
-    echo 'max=30' >> /app/entrypoint.sh && \
-    echo 'while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT" && [ $count -lt $max ]; do' >> /app/entrypoint.sh && \
-    echo '  echo "Waiting for database connection... ($count/$max)"' >> /app/entrypoint.sh && \
-    echo '  sleep 2' >> /app/entrypoint.sh && \
-    echo '  count=$((count+1))' >> /app/entrypoint.sh && \
-    echo 'done' >> /app/entrypoint.sh && \
-    echo 'if [ $count -eq $max ]; then' >> /app/entrypoint.sh && \
-    echo '  echo "Database connection failed"' >> /app/entrypoint.sh && \
-    echo '  exit 1' >> /app/entrypoint.sh && \
-    echo 'fi' >> /app/entrypoint.sh && \
-    echo 'echo "Database is ready, starting application"' >> /app/entrypoint.sh && \
+    echo 'echo "Starting Finance Monkey application..."' >> /app/entrypoint.sh && \
+    echo '# Log database connection info for troubleshooting' >> /app/entrypoint.sh && \
+    echo 'masked_url=$(echo "$DATABASE_URL" | sed "s/:[^:@]*@/:*****@/g")' >> /app/entrypoint.sh && \
+    echo 'echo "Database connection string format: $masked_url"' >> /app/entrypoint.sh && \
+    echo '# Start the application without waiting for database' >> /app/entrypoint.sh && \
+    echo 'echo "Starting application with database connection retry enabled"' >> /app/entrypoint.sh && \
     echo 'exec java -jar app.jar' >> /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
 

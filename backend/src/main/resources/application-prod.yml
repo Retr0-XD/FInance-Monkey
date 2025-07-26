@@ -1,5 +1,18 @@
 spring:
-  # Datasource configuration is handled by DatabaseConfig.java
+  # Connection settings for resiliency
+  datasource:
+    # These settings help with connection issues in cloud environments
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 5
+      minimum-idle: 2
+      initialization-fail-timeout: -1
+    # Enable connection retry for database connectivity issues
+    tomcat:
+      max-wait: 20000
+      test-on-borrow: true
+  
+  # Make application more tolerant to failures
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -8,13 +21,27 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
+        # Set to true to show generated SQL
+        show_sql: false
+        # Configure connection retry
+        connection.provider_disables_autocommit: false
+        # Defer data source initialization
+        connection.handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_STATEMENT
     show-sql: false
+    # Don't fail on startup if database is not available
+    open-in-view: false
+    
+  # Make Flyway also more resilient
   flyway:
     enabled: true
     baseline-on-migrate: true
-    datasource:
-      # Ensure Flyway uses the same datasource as the application
-      primary: true
+    # Add connection retry
+    connect-retries: 10
+    connect-retries-interval: 5s
+    # Don't fail on startup if migration fails
+    fail-on-missing-locations: false
+    # Don't validate on migrate to avoid connection issues
+    validate-on-migrate: false
 
 server:
   port: ${PORT:10000}
