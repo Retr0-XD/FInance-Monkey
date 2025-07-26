@@ -3,13 +3,12 @@ spring:
   datasource:
     # These settings help with connection issues in cloud environments
     hikari:
-      connection-timeout: 20000
+      # Connection timeout for DNS resolution issues - increased to 30 seconds
+      connection-timeout: 30000
       maximum-pool-size: 5
       minimum-idle: 2
       # Don't fail initialization forever
       initialization-fail-timeout: -1
-      # Add a large connection timeout for DNS resolution issues
-      connection-timeout: 30000
       # Continue trying to acquire connection
       keepalive-time: 60000
       # Only validate once every 10 seconds to reduce load
