@@ -107,8 +107,9 @@ public class DelayedDatabaseInitConfig {
      * Bean to provide Flyway for manual initialization
      * Only created if dataSource is available and not null
      */
-    @Bean(required = false)
+    @Bean
     @ConditionalOnBean(DataSource.class)
+    @ConditionalOnProperty(name = "spring.flyway.enabled", havingValue = "true", matchIfMissing = false)
     public Flyway flyway() {
         if (dataSource == null) {
             log.warn("DataSource is null, skipping Flyway bean creation");
