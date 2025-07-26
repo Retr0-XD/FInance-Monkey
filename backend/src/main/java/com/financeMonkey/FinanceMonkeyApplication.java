@@ -19,14 +19,8 @@ import java.util.Arrays;
 
 /**
  * Main Application class for Finance Monkey
- * Configured to handle database connection issues gracefully
- * This configuration excludes DataSource and Flyway auto-configuration
- * to allow application to start even when database is unavailable
  */
-@SpringBootApplication(exclude = {
-    DataSourceAutoConfiguration.class,
-    FlywayAutoConfiguration.class
-})
+@SpringBootApplication
 @EnableScheduling
 @EnableRetry
 public class FinanceMonkeyApplication {
