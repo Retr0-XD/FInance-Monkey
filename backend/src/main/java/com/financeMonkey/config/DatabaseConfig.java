@@ -118,6 +118,4 @@ public class DatabaseConfig {
             return null;
         }
     }
-    
-}
 }
