@@ -1,32 +1,48 @@
 spring:
+  # Disable database auto-configuration to allow application to start even when database is unavailable
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+  
+  # Application-specific settings
+  application:
+    name: finance-monkey
+  
   # Connection settings for resiliency
   datasource:
     # These settings help with connection issues in cloud environments
     hikari:
-      # Connection timeout for DNS resolution issues - increased to 30 seconds
-      connection-timeout: 30000
+      # Connection timeout for DNS resolution issues - increased to 60 seconds
+      connection-timeout: 60000
       maximum-pool-size: 5
-      minimum-idle: 2
+      minimum-idle: 1
       # Don't fail initialization forever
       initialization-fail-timeout: -1
       # Continue trying to acquire connection
-      keepalive-time: 60000
+      keepalive-time: 120000
       # Only validate once every 10 seconds to reduce load
       validation-timeout: 10000
       # Retry connection validation 
-      max-lifetime: 180000
+      max-lifetime: 300000
+      # Idle timeout
+      idle-timeout: 300000
+      # Connection test query
+      connection-test-query: SELECT 1
+      # Register MBeans for monitoring
+      register-mbeans: true
     
-    # Enable connection retry for database connectivity issues
-    tomcat:
-      max-wait: 20000
-      test-on-borrow: true
-      
+    # Configure connection url and driver
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/financemonkey}
+    driver-class-name: org.postgresql.Driver
+    
   # Configuration for managing DNS resolution issues in cloud environments
   cloud:
     # Render-specific settings
     render:
       # Allow more time for DNS resolution
-      connection-timeout: 30000
+      connection-timeout: 60000
   
   # Make application more tolerant to failures
   jpa:
@@ -37,19 +53,40 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
-        # Set to true to show generated SQL
+        # Set to true to show generated SQL in development
         show_sql: false
         # Configure connection retry
         connection.provider_disables_autocommit: false
         # Defer data source initialization
         connection.handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_STATEMENT
-    show-sql: false
+        # JDBC connection settings
+        connection.autoReconnect: true
+        connection.characterEncoding: utf8
+        connection.useUnicode: true
     # Don't fail on startup if database is not available
     open-in-view: false
     
-  # Make Flyway also more resilient
+  # Flyway migration configuration - will be enabled after successful database connection
   flyway:
-    enabled: true
+    # Disable automatic migration at startup
+    enabled: false
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    
+# Application-specific configuration
+app:
+  # Database resilience configuration
+  database:
+    # Enable resilient mode to allow application to start without database
+    resilient-mode: true
+    # Retry configuration
+    retry:
+      max-attempts: 5
+      initial-interval: 1000
+      multiplier: 2
+      max-interval: 30000
+  flyway:
+    enabled: false  # Disable Flyway initially and enable it programmatically when DB is available
     baseline-on-migrate: true
     # Add connection retry
     connect-retries: 10
@@ -58,6 +95,13 @@ spring:
     fail-on-missing-locations: false
     # Don't validate on migrate to avoid connection issues
     validate-on-migrate: false
+    
+  # Auto-configuration settings - avoid failing on missing resources/connections
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
 
 server:
   port: ${PORT:10000}
