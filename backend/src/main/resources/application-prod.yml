@@ -65,6 +65,8 @@ app:
   database:
     # Enable resilient mode to allow application to start without database
     resilient-mode: true
+    # Use manual data source initialization with retry logic
+    manual-datasource-init: false
     # Retry configuration
     retry:
       max-attempts: 5
@@ -82,12 +84,10 @@ app:
     # Don't validate on migrate to avoid connection issues
     validate-on-migrate: false
     
-  # Auto-configuration settings - avoid failing on missing resources/connections
+  # Auto-configuration settings - allow Spring Boot to manage datasource
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      # No exclusions - let Spring Boot handle auto-configuration
 
 server:
   port: ${PORT:10000}

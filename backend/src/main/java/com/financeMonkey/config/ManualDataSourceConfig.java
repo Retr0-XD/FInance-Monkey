@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * only after the database becomes available
  */
 @Configuration
-@ConditionalOnProperty(name = "app.database.manual-datasource-init", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.database.manual-datasource-init", havingValue = "true", matchIfMissing = false)
 public class ManualDataSourceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ManualDataSourceConfig.class);
@@ -59,12 +59,11 @@ public class ManualDataSourceConfig {
      * Creates a DataSource bean with retry capability
      * This will be created once the database is available
      */
-    @Bean
-    @Primary
+    @Bean(name = "manualDataSource")
     @Retryable(value = SQLException.class, 
                maxAttempts = 5, 
                backoff = @Backoff(delay = 1000, multiplier = 2, maxDelay = 30000))
-    public DataSource dataSource() throws SQLException {
+    public DataSource manualDataSource() throws SQLException {
         log.info("Creating DataSource with retry capability");
         
         String dbUrl = getDatabaseUrl();

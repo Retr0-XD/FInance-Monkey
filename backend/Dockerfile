@@ -27,7 +27,7 @@ RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo 'echo "==============================================="' >> /app/entrypoint.sh && \
     echo '' >> /app/entrypoint.sh && \
     echo '# Check if database URL is in PostgreSQL format and needs conversion' >> /app/entrypoint.sh && \
-    echo 'if [ -n "$DATABASE_URL" ] && [[ "$DATABASE_URL" == postgresql://* ]]; then' >> /app/entrypoint.sh && \
+    echo 'if [ -n "$DATABASE_URL" ] && [ "$(echo $DATABASE_URL | cut -c1-12)" = "postgresql://" ]; then' >> /app/entrypoint.sh && \
     echo '  echo "Converting PostgreSQL URL to JDBC format"' >> /app/entrypoint.sh && \
     echo '  # Extract username:password@host:port/dbname' >> /app/entrypoint.sh && \
     echo '  DB_URI=${DATABASE_URL#postgresql://}' >> /app/entrypoint.sh && \

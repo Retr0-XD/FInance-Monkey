@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 @Configuration
 @Profile("prod")
 @EnableRetry
+@ConditionalOnProperty(name = "app.database.manual-datasource-init", havingValue = "false", matchIfMissing = true)
 public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
 
