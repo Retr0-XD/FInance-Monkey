@@ -88,8 +88,9 @@ public class DelayedDatabaseInitConfig {
                     .baselineOnMigrate(true)
                     .load();
                 
-                int appliedMigrations = flyway.migrate();
-                log.info("Flyway migrations applied: {}", appliedMigrations);
+                // Execute migrations and get result object
+                var migrationResult = flyway.migrate();
+                log.info("Flyway migrations applied: {}", migrationResult.migrationsExecuted);
             } catch (Exception e) {
                 log.error("Failed to apply Flyway migrations", e);
                 // Don't throw exception - application should continue even if migrations fail

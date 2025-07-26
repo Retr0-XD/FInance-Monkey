@@ -43,7 +43,7 @@ public class DatabaseRetryConfig {
         retryableExceptions.put(UnknownHostException.class, true);        // DNS resolution issues
         retryableExceptions.put(java.net.ConnectException.class, true);   // Connection refused
         retryableExceptions.put(java.sql.SQLException.class, true);       // SQL exceptions
-        retryableExceptions.put(javax.persistence.PersistenceException.class, true); // JPA exceptions
+        // Removed JPA persistence exception as it requires additional dependency
         
         // Increase max retries for prod environment
         SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(15, retryableExceptions, true);

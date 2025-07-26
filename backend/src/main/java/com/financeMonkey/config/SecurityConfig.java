@@ -32,27 +32,32 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Enable CORS and disable CSRF
-        http = http.cors().and().csrf().disable();
-        
-        // Set session management to stateless
-        http = http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and();
-        
-        // Set permissions on endpoints
-        http.authorizeHttpRequests()
+        // Configure CORS, CSRF, session management and security rules
+        http
+            // Enable CORS and disable CSRF - updated method calls
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            
+            // Set session management to stateless
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Set permissions on endpoints
+            .authorizeHttpRequests(authorize -> authorize
                 // Public endpoints
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/info").permitAll()
+                .requestMatchers("/api/status/**").permitAll()
                 // Private endpoints
-                .anyRequest().authenticated();
+                .anyRequest().authenticated()
+            )
         
-        // Add JWT token filter
-        http.addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+            // Add JWT token filter
+            .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
