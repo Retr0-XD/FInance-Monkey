@@ -59,10 +59,16 @@ The system follows a three-tier architecture:
    - Dashboard with analytics and visualizations
    - Account management features
 
-3. **Database (PostgreSQL)**
-   - Stores user information
-   - Stores processed financial transactions
-   - Maintains email processing status
+3. **Storage**
+   - **Database (PostgreSQL)** - Primary storage for user data
+     - Stores user information
+     - Stores processed financial transactions
+     - Maintains email processing status
+   
+   - **Google Drive** - Alternative storage solution
+     - Stores transaction data as JSON files
+     - Allows database-free operation
+     - Provides easy access to data for the frontend
 
 ## Getting Started
 
@@ -87,6 +93,8 @@ GEMINI_API_KEY=your-gemini-api-key
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/oauth2/callback/google
+# Note: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET will be used for both Gmail and Drive access
+# No need for separate GOOGLE_CREDENTIALS_JSON if you already have the above variables set
 EOL
 
 # Start the application

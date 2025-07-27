@@ -29,4 +29,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     
     @Query("SELECT COUNT(t) FROM Transaction t WHERE t.user = :user AND t.recurring = true")
     Long countRecurringTransactionsByUser(@Param("user") User user);
+    
+    /**
+     * Find all transactions by user ID
+     */
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId")
+    List<Transaction> findByUserId(@Param("userId") String userId);
+    
+    /**
+     * Find all distinct user IDs that have transactions
+     */
+    @Query("SELECT DISTINCT t.user.id FROM Transaction t")
+    List<String> findDistinctUserIds();
 }

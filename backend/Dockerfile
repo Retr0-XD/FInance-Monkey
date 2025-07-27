@@ -18,12 +18,16 @@ RUN apt-get update && \
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 
-# Create simple entrypoint script
+# Create directories for Google Drive integration
+RUN mkdir -p /app/credentials /app/tokens && \
+    chmod -R 777 /app/tokens
+
+# Create enhanced entrypoint script with Google Drive support
 RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo 'set -e' >> /app/entrypoint.sh && \
     echo '' >> /app/entrypoint.sh && \
     echo 'echo "==============================================="' >> /app/entrypoint.sh && \
-    echo 'echo "   Finance Monkey Application - Render Deploy"' >> /app/entrypoint.sh && \
+    echo 'echo "   Finance Monkey Application - Local Deploy"' >> /app/entrypoint.sh && \
     echo 'echo "==============================================="' >> /app/entrypoint.sh && \
     echo '' >> /app/entrypoint.sh && \
     echo '# Check if database URL is in PostgreSQL format and needs conversion' >> /app/entrypoint.sh && \
@@ -38,6 +42,20 @@ RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo '  echo "Database URL converted: $masked_url"' >> /app/entrypoint.sh && \
     echo 'fi' >> /app/entrypoint.sh && \
     echo '' >> /app/entrypoint.sh && \
+    echo '# Check for Google Drive credentials' >> /app/entrypoint.sh && \
+    echo 'if [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then' >> /app/entrypoint.sh && \
+    echo '  echo "Google Drive credentials found at $GOOGLE_APPLICATION_CREDENTIALS"' >> /app/entrypoint.sh && \
+    echo 'else' >> /app/entrypoint.sh && \
+    echo '  echo "WARNING: Google Drive credentials not found at $GOOGLE_APPLICATION_CREDENTIALS"' >> /app/entrypoint.sh && \
+    echo '  echo "Some features related to Google Drive may not work"' >> /app/entrypoint.sh && \
+    echo 'fi' >> /app/entrypoint.sh && \
+    echo '' >> /app/entrypoint.sh && \
+    echo '# Create tokens directory if it doesn\'t exist' >> /app/entrypoint.sh && \
+    echo 'if [ ! -d "/app/tokens" ]; then' >> /app/entrypoint.sh && \
+    echo '  mkdir -p /app/tokens' >> /app/entrypoint.sh && \
+    echo '  chmod -R 777 /app/tokens' >> /app/entrypoint.sh && \
+    echo 'fi' >> /app/entrypoint.sh && \
+    echo '' >> /app/entrypoint.sh && \
     echo '# Start the application' >> /app/entrypoint.sh && \
     echo 'echo "Starting Finance Monkey application..."' >> /app/entrypoint.sh && \
     echo 'exec java -jar app.jar' >> /app/entrypoint.sh && \
@@ -45,7 +63,7 @@ RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
 
 # Adding comprehensive health check with retries
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD curl -f http://localhost:10000/actuator/health || exit 1
+    CMD curl -f http://localhost:8080/api/actuator/health || exit 1
 
-EXPOSE 10000
+EXPOSE 8080
 ENTRYPOINT ["/app/entrypoint.sh"]

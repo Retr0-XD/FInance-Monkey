@@ -32,7 +32,9 @@ The system will follow a three-tier architecture:
 
 ### 2. Data Storage Layer
 - **User Management**: Store user profiles, preferences, and authentication details
-- **Transaction Storage**: Store processed transaction data with proper categorization
+- **Transaction Storage**: 
+  - Primary: Store processed transaction data with proper categorization in PostgreSQL
+  - Alternative: Store transaction data as JSON files in Google Drive
 - **Email Metadata Storage**: Track which emails have been processed
 
 ### 3. Analytics Engine

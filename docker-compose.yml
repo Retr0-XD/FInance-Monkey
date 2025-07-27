@@ -13,26 +13,68 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     container_name: finance-monkey-backend
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
-      - DB_URL=jdbc:postgresql://postgres:5432/finance_monkey
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/finance_monkey
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
       - JWT_SECRET=developmentSecretKeyWithMoreThan256BitsToSatisfyJWTRequirements
       - GEMINI_API_KEY=${GEMINI_API_KEY:-your-gemini-api-key}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your-google-client-secret}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/credentials.json
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/auth/oauth2/callback/google}
       - SERVER_SERVLET_CONTEXT_PATH=/api
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
     ports:
       - "8080:8080"
+    volumes:
+      - ./backend/src/main/resources/credentials:/app/credentials:ro
+      - drive-tokens:/app/tokens
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: finance-monkey-frontend
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=development-secret-for-next-auth-do-not-use-in-production
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   postgres-data:
+  drive-tokens:

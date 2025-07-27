@@ -37,6 +37,12 @@ public class DatabaseConnectivityManager {
     @Value("${spring.datasource.url:#{null}}")
     private String configuredDatabaseUrl;
     
+    @Value("${spring.datasource.username:#{null}}")
+    private String username;
+    
+    @Value("${spring.datasource.password:#{null}}")
+    private String password;
+    
     private final AtomicBoolean databaseAvailable = new AtomicBoolean(false);
     private LocalDateTime lastConnectAttempt;
     private int consecutiveFailures = 0;
@@ -109,7 +115,9 @@ public class DatabaseConnectivityManager {
         }
         
         // Test actual database connection
-        try (Connection conn = DriverManager.getConnection(dbUrl)) {
+        try (Connection conn = username != null && password != null ? 
+                DriverManager.getConnection(dbUrl, username, password) :
+                DriverManager.getConnection(dbUrl)) {
             log.debug("Successfully established test connection to database");
         }
     }
@@ -138,6 +146,23 @@ public class DatabaseConnectivityManager {
         // If not found, use the configured one from application properties
         if (dbUrl == null || dbUrl.isEmpty()) {
             dbUrl = configuredDatabaseUrl;
+        }
+        
+        // Extract credentials from URL format if present (postgresql://user:pass@host:port/db)
+        if (dbUrl != null && dbUrl.startsWith("postgresql://") && username == null) {
+            try {
+                String noPrefix = dbUrl.substring("postgresql://".length());
+                if (noPrefix.contains("@")) {
+                    String credentials = noPrefix.split("@")[0];
+                    if (credentials.contains(":")) {
+                        username = credentials.split(":")[0];
+                        password = credentials.split(":")[1];
+                        log.debug("Extracted credentials from DATABASE_URL");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to extract credentials from DATABASE_URL", e);
+            }
         }
         
         return dbUrl;

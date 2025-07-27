@@ -44,6 +44,13 @@ google:
     client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
     client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
     redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/google}
+  application:
+    name: ${GOOGLE_APP_NAME:Finance Monkey}
+  drive:
+    # The same OAuth credentials will be used for both Gmail and Drive access
+    # Make sure the Drive API is enabled in your Google Cloud project
+    export:
+      schedule: "0 0 1 1 * ?" # Monthly at 1am on the 1st day
 
 springdoc:
   api-docs:
