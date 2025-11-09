@@ -122,7 +122,7 @@ export default function Login() {
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Link href="/register" style={{ textDecoration: 'none', color: 'inherit' }}>
               <Typography variant="body2" color="primary" component="span">
-                Don't have an account? Sign up
+                Don&apos;t have an account? Sign up
               </Typography>
             </Link>
           </Box>

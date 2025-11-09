@@ -12,8 +12,7 @@ import {
   Box,
   CircularProgress,
   Typography,
-  TablePagination,
-  Chip
+  TablePagination
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
@@ -22,7 +21,7 @@ interface Column<T> {
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  format?: (value: any, row: T) => React.ReactNode;
+  format?: (value: unknown, row: T) => React.ReactNode;
 }
 
 interface DataTableProps<T> {

@@ -101,17 +101,23 @@ export default function EmailAccounts() {
     }
   };
 
-  const emailAccountColumns = [
+  const emailAccountColumns: Array<{
+    id: keyof EmailAccount | 'actions';
+    label: string;
+    minWidth?: number;
+    align?: 'right' | 'left' | 'center';
+    format?: (value: unknown, row?: EmailAccount) => React.ReactNode;
+  }> = [
     { id: 'email', label: 'Email Address', minWidth: 200 },
     { id: 'provider', label: 'Provider', minWidth: 100 },
     { 
       id: 'connected', 
       label: 'Status', 
       minWidth: 100,
-      format: (value: boolean) => (
+      format: (value: unknown) => (
         <Chip 
-          label={value ? 'Connected' : 'Disconnected'} 
-          color={value ? 'success' : 'default'} 
+          label={(value as boolean) ? 'Connected' : 'Disconnected'} 
+          color={(value as boolean) ? 'success' : 'default'} 
           size="small" 
         />
       ),
@@ -120,21 +126,21 @@ export default function EmailAccounts() {
       id: 'lastFetched', 
       label: 'Last Synced', 
       minWidth: 150,
-      format: (value: string | null) => value ? format(new Date(value), 'MMM dd, yyyy HH:mm') : 'Never',
+      format: (value: unknown) => (value as string | null) ? format(new Date(value as string), 'MMM dd, yyyy HH:mm') : 'Never',
     },
     {
       id: 'actions',
       label: 'Actions',
       minWidth: 100,
       align: 'right' as const,
-      format: (_: any, row: EmailAccount) => (
+      format: (_value: unknown, row?: EmailAccount) => (
         <Box>
           <IconButton 
             size="small" 
-            onClick={() => handleRefreshEmailAccount(row)}
-            disabled={!row.connected || refreshingId === row.id}
+            onClick={() => row && handleRefreshEmailAccount(row)}
+            disabled={!row?.connected || refreshingId === row?.id}
           >
-            {refreshingId === row.id ? (
+            {refreshingId === row?.id ? (
               <CircularProgress size={20} />
             ) : (
               <RefreshIcon fontSize="small" />
@@ -142,9 +148,9 @@ export default function EmailAccounts() {
           </IconButton>
           <IconButton 
             size="small" 
-            onClick={() => handleDisconnectAccount(row)} 
+            onClick={() => row && handleDisconnectAccount(row)} 
             color="error"
-            disabled={!row.connected}
+            disabled={!row?.connected}
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
@@ -206,7 +212,7 @@ export default function EmailAccounts() {
           <DialogContent>
             <Box component="form" sx={{ mt: 2 }}>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Email Address"
@@ -218,7 +224,7 @@ export default function EmailAccounts() {
                     helperText={formErrors.email}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Provider"
@@ -238,7 +244,7 @@ export default function EmailAccounts() {
                     <option value="OTHER">Other</option>
                   </TextField>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Description (Optional)"
@@ -252,7 +258,7 @@ export default function EmailAccounts() {
 
               <Box sx={{ mt: 3 }}>
                 <Alert severity="info">
-                  After connecting, you will need to authorize Finance Monkey to access your email account. You will be redirected to the provider's login page.
+                  After connecting, you will need to authorize Finance Monkey to access your email account. You will be redirected to the provider&apos;s login page.
                 </Alert>
               </Box>
             </Box>

@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Box, Container, Typography, Paper, TextField, Button, Stack, Alert } from '@mui/material';
 import { SideNav } from '../components';
-import { useAppDispatch } from '@/lib/hooks';
 import { useSession } from 'next-auth/react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LockIcon from '@mui/icons-material/Lock';
@@ -12,7 +11,6 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 
 export default function Settings() {
   const { data: session } = useSession();
-  const dispatch = useAppDispatch();
   const [name, setName] = useState(session?.user?.name || '');
   const [email, setEmail] = useState(session?.user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -30,7 +28,7 @@ export default function Settings() {
     try {
       // Mock successful update
       setSuccess('Profile updated successfully!');
-    } catch (err) {
+    } catch {
       setError('Failed to update profile');
     }
   };
@@ -58,7 +56,7 @@ export default function Settings() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err) {
+    } catch {
       setError('Failed to change password');
     }
   };

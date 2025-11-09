@@ -11,7 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { format } from 'date-fns';
-import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, FormHelperText } from '@mui/material';
+import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, FormHelperText, SelectChangeEvent } from '@mui/material';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -193,8 +193,14 @@ export default function Transactions() {
     }
   };
 
-  const transactionColumns = [
-    { id: 'transactionDate', label: 'Date', minWidth: 100, format: (value: string) => format(new Date(value), 'MMM dd, yyyy') },
+  const transactionColumns: Array<{
+    id: keyof Transaction | 'actions';
+    label: string;
+    minWidth?: number;
+    align?: 'right' | 'left' | 'center';
+    format?: (value: unknown, row?: Transaction) => React.ReactNode;
+  }> = [
+    { id: 'transactionDate', label: 'Date', minWidth: 100, format: (value: unknown) => format(new Date(value as string), 'MMM dd, yyyy') },
     { id: 'description', label: 'Description', minWidth: 170 },
     { id: 'vendor', label: 'Vendor', minWidth: 100 },
     { id: 'categoryName', label: 'Category', minWidth: 100 },
@@ -203,13 +209,13 @@ export default function Transactions() {
       label: 'Amount', 
       minWidth: 100, 
       align: 'right' as const,
-      format: (value: number) => (
+      format: (value: unknown) => (
         <Typography
           variant="body2"
-          color={value < 0 ? 'error' : 'success.main'}
+          color={(value as number) < 0 ? 'error' : 'success.main'}
           fontWeight="bold"
         >
-          {formatCurrency(value)}
+          {formatCurrency(value as number)}
         </Typography>
       ),
     },
@@ -218,12 +224,12 @@ export default function Transactions() {
       label: 'Actions',
       minWidth: 100,
       align: 'right' as const,
-      format: (_: any, row: Transaction) => (
+      format: (_value: unknown, row?: Transaction) => (
         <Box>
-          <IconButton size="small" onClick={() => handleOpenDialog(row)}>
+          <IconButton size="small" onClick={() => row && handleOpenDialog(row)}>
             <EditIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" onClick={() => handleDeleteTransaction(row)} color="error">
+          <IconButton size="small" onClick={() => row && handleDeleteTransaction(row)} color="error">
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -310,7 +316,7 @@ export default function Transactions() {
           <DialogContent>
             <Box component="form" sx={{ mt: 2 }}>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Vendor"
@@ -321,7 +327,7 @@ export default function Transactions() {
                     helperText={formErrors.vendor}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Description"
@@ -332,7 +338,7 @@ export default function Transactions() {
                     helperText={formErrors.description}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <TextField
                     fullWidth
                     label="Amount"
@@ -347,7 +353,7 @@ export default function Transactions() {
                     }}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <TextField
                     fullWidth
                     label="Date"
@@ -360,13 +366,13 @@ export default function Transactions() {
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl fullWidth>
                     <InputLabel>Category</InputLabel>
                     <Select
                       name="categoryId"
                       value={formData.categoryId || ''}
-                      onChange={handleFormChange as any}
+                      onChange={handleFormChange as (event: SelectChangeEvent<string>) => void}
                       label="Category"
                     >
                       <MenuItem value="">
@@ -380,13 +386,13 @@ export default function Transactions() {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl fullWidth>
                     <InputLabel>Recurring</InputLabel>
                     <Select
-                      name="recurring"
+                      name="recurring" /* Line 395 specific fix below */
                       value={formData.recurring}
-                      onChange={handleFormChange as any}
+                      onChange={handleFormChange as (event: SelectChangeEvent<boolean>) => void}
                       label="Recurring"
                     >
                       <MenuItem value={false}>No</MenuItem>
@@ -395,13 +401,13 @@ export default function Transactions() {
                   </FormControl>
                 </Grid>
                 {formData.recurring && (
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <FormControl fullWidth error={!!formErrors.recurrencePattern}>
                       <InputLabel>Recurrence Pattern</InputLabel>
                       <Select
                         name="recurrencePattern"
                         value={formData.recurrencePattern || ''}
-                        onChange={handleFormChange as any}
+                        onChange={handleFormChange as (event: SelectChangeEvent<string>) => void}
                         label="Recurrence Pattern"
                       >
                         {recurrenceOptions.map((option) => (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Grid, Typography, Button, Card, CardContent, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Container, Typography, Button, Card, CardContent, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Alert, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Stack } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { fetchCategories, createCategory, updateCategory, deleteCategory, Category } from '@/store/slices/categorySlice';
 import { SideNav, DataTable } from '../components';
@@ -9,7 +9,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { IconButton, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import ColorPicker from '@mui/material/CircularProgress';  // This is a placeholder, we'd need a color picker component
 
 interface CategoryFormData {
@@ -138,25 +137,31 @@ export default function Categories() {
     }
   };
 
-  const categoryColumns = [
+  const categoryColumns: Array<{
+    id: keyof Category | 'actions';
+    label: string;
+    minWidth?: number;
+    align?: 'right' | 'left' | 'center';
+    format?: (value: unknown, row: Category) => React.ReactNode;
+  }> = [
     { id: 'name', label: 'Category Name', minWidth: 200 },
     { 
       id: 'parentCategoryId', 
       label: 'Parent Category', 
       minWidth: 150,
-      format: (value: string | undefined) => getCategoryNameById(value),
+      format: (value: unknown) => getCategoryNameById(value as string | undefined),
     },
     { id: 'description', label: 'Description', minWidth: 200 },
     { 
       id: 'color', 
       label: 'Color', 
       minWidth: 80,
-      format: (value: string | undefined) => (
+      format: (value: unknown) => (
         <Box
           sx={{
             width: 24,
             height: 24,
-            bgcolor: value || '#1976d2',
+            bgcolor: (value as string | undefined) || '#1976d2',
             borderRadius: '50%',
             border: '1px solid #ddd',
           }}
@@ -168,7 +173,7 @@ export default function Categories() {
       label: 'Actions',
       minWidth: 100,
       align: 'right' as const,
-      format: (_: any, row: Category) => (
+      format: (_value: unknown, row: Category) => (
         <Box>
           <IconButton size="small" onClick={() => handleOpenDialog(row)}>
             <EditIcon fontSize="small" />
@@ -245,58 +250,48 @@ export default function Categories() {
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
           <DialogTitle>{editMode ? 'Edit Category' : 'Add Category'}</DialogTitle>
           <DialogContent>
-            <Box component="form" sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Category Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleFormChange}
-                    error={!!formErrors.name}
-                    helperText={formErrors.name}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Parent Category (Optional)</InputLabel>
-                    <Select
-                      name="parentCategoryId"
-                      value={formData.parentCategoryId || ''}
-                      onChange={handleFormChange as any}
-                      label="Parent Category (Optional)"
+            <Stack component="form" spacing={2} sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="Category Name"
+                name="name"
+                value={formData.name}
+                onChange={handleFormChange}
+                error={!!formErrors.name}
+                helperText={formErrors.name}
+              />
+              <FormControl fullWidth>
+                <InputLabel>Parent Category (Optional)</InputLabel>
+                <Select
+                  name="parentCategoryId"
+                  value={formData.parentCategoryId || ''}
+                  onChange={handleFormChange as (event: SelectChangeEvent<string>) => void}
+                  label="Parent Category (Optional)"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {parentCategories.map((category) => (
+                    <MenuItem 
+                      key={category.id} 
+                      value={category.id}
+                      disabled={formData.id === category.id} // Prevent self-reference
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {parentCategories.map((category) => (
-                        <MenuItem 
-                          key={category.id} 
-                          value={category.id}
-                          disabled={formData.id === category.id} // Prevent self-reference
-                        >
-                          {category.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Description (Optional)"
-                    name="description"
-                    value={formData.description || ''}
-                    onChange={handleFormChange}
-                    placeholder="e.g., Expenses for dining out"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <ColorPickerField />
-                </Grid>
-              </Grid>
-            </Box>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Description (Optional)"
+                name="description"
+                value={formData.description || ''}
+                onChange={handleFormChange}
+                placeholder="e.g., Expenses for dining out"
+              />
+              <ColorPickerField />
+            </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>Cancel</Button>
