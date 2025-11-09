@@ -73,8 +73,8 @@ interface ChartCardProps {
   title: string;
   subtitle?: string;
   chartType: ChartType;
-  data: ChartData<any>;
-  options?: ChartOptions<any>;
+  data: ChartData<'line' | 'bar' | 'pie' | 'doughnut'>;
+  options?: ChartOptions<'line' | 'bar' | 'pie' | 'doughnut'>;
   loading?: boolean;
   height?: number | string;
   action?: React.ReactNode;
@@ -92,7 +92,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
 }) => {
   const theme = useTheme();
 
-  const defaultOptions: ChartOptions<any> = {
+  const defaultOptions: ChartOptions<'line' | 'bar' | 'pie' | 'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -135,13 +135,13 @@ const ChartCard: React.FC<ChartCardProps> = ({
   const renderChart = () => {
     switch (chartType) {
       case 'line':
-        return <Line data={data} options={mergedOptions} height={height} />;
+        return <Line data={data as ChartData<'line'>} options={mergedOptions as ChartOptions<'line'>} height={height} />;
       case 'bar':
-        return <Bar data={data} options={mergedOptions} height={height} />;
+        return <Bar data={data as ChartData<'bar'>} options={mergedOptions as ChartOptions<'bar'>} height={height} />;
       case 'pie':
-        return <Pie data={data} options={mergedOptions} />;
+        return <Pie data={data as ChartData<'pie'>} options={mergedOptions as ChartOptions<'pie'>} />;
       case 'doughnut':
-        return <Doughnut data={data} options={mergedOptions} />;
+        return <Doughnut data={data as ChartData<'doughnut'>} options={mergedOptions as ChartOptions<'doughnut'>} />;
       default:
         return null;
     }

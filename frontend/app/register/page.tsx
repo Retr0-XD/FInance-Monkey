@@ -115,7 +115,7 @@ export default function Register() {
         )}
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 3, width: '100%' }}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 required
                 fullWidth
@@ -129,7 +129,7 @@ export default function Register() {
                 helperText={errors.name}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 required
                 fullWidth
@@ -143,7 +143,7 @@ export default function Register() {
                 helperText={errors.email}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 required
                 fullWidth
@@ -158,7 +158,7 @@ export default function Register() {
                 helperText={errors.password}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 required
                 fullWidth

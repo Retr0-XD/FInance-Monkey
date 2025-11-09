@@ -3,7 +3,6 @@
 import React from 'react';
 import { Box, Container, Typography, Button, Grid, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -68,7 +67,7 @@ export default function Home() {
       <HeroSection sx={{ mt: 4 }}>
         <Container>
           <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={7}>
+            <Grid size={{ xs: 12, md: 7 }}>
               <Typography variant="h2" component="h1" fontWeight="bold" gutterBottom>
                 Take Control of Your Finances
               </Typography>
@@ -83,7 +82,7 @@ export default function Home() {
                   component={Link}
                   href="/register"
                 >
-                  Get Started - It's Free
+                  Get Started - It&apos;s Free
                 </Button>
                 <Button 
                   variant="outlined" 
@@ -96,7 +95,7 @@ export default function Home() {
                 </Button>
               </Box>
             </Grid>
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <Box sx={{ position: 'relative', height: 300, width: '100%', bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
                 {/* Placeholder for hero image */}
                 <Typography variant="h4" sx={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -117,7 +116,7 @@ export default function Home() {
         </Typography>
         
         <Grid container spacing={4} sx={{ mt: 4 }}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <FeatureCard elevation={2}>
               <Typography variant="h2" color="primary" textAlign="center">1</Typography>
               <Typography variant="h6" textAlign="center" gutterBottom>Connect Your Email</Typography>
@@ -126,7 +125,7 @@ export default function Home() {
               </Typography>
             </FeatureCard>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <FeatureCard elevation={2}>
               <Typography variant="h2" color="primary" textAlign="center">2</Typography>
               <Typography variant="h6" textAlign="center" gutterBottom>AI Processes Your Data</Typography>
@@ -135,7 +134,7 @@ export default function Home() {
               </Typography>
             </FeatureCard>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <FeatureCard elevation={2}>
               <Typography variant="h2" color="primary" textAlign="center">3</Typography>
               <Typography variant="h6" textAlign="center" gutterBottom>Gain Financial Insights</Typography>
@@ -157,7 +156,7 @@ export default function Home() {
         
         <Grid container spacing={4} sx={{ mt: 4 }}>
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} key={index}>
+            <Grid size={{ xs: 12, sm: 6 }} key={index}>
               <FeatureCard elevation={2}>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Typography variant="h3" mr={2}>{feature.icon}</Typography>

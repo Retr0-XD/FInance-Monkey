@@ -70,8 +70,23 @@ export default function Dashboard() {
     ],
   };
 
-  const transactionColumns = [
-    { id: 'transactionDate', label: 'Date', minWidth: 100, format: (value: string) => format(new Date(value), 'MMM dd, yyyy') },
+  type TransactionRow = {
+    id: string;
+    amount: number;
+    vendor: string;
+    description: string;
+    transactionDate: string;
+    categoryName?: string;
+  };
+
+  const transactionColumns: Array<{
+    id: keyof TransactionRow | 'actions';
+    label: string;
+    minWidth?: number;
+    align?: 'right' | 'left' | 'center';
+    format?: (value: unknown, row?: TransactionRow) => React.ReactNode;
+  }> = [
+    { id: 'transactionDate', label: 'Date', minWidth: 100, format: (value: unknown) => format(new Date(value as string), 'MMM dd, yyyy') },
     { id: 'description', label: 'Description', minWidth: 170 },
     { id: 'vendor', label: 'Vendor', minWidth: 100 },
     { id: 'categoryName', label: 'Category', minWidth: 100 },
@@ -80,13 +95,13 @@ export default function Dashboard() {
       label: 'Amount', 
       minWidth: 100, 
       align: 'right' as const,
-      format: (value: number) => (
+      format: (value: unknown) => (
         <Typography
           variant="body2"
-          color={value < 0 ? 'error' : 'success.main'}
+          color={(value as number) < 0 ? 'error' : 'success.main'}
           fontWeight="bold"
         >
-          {formatCurrency(value)}
+          {formatCurrency(value as number)}
         </Typography>
       ),
     },
@@ -120,7 +135,7 @@ export default function Dashboard() {
         </Box>
 
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="Total Balance"
               value={loading ? '---' : formatCurrency(summary?.balance || 0)}
@@ -128,7 +143,7 @@ export default function Dashboard() {
               loading={loading}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="Total Income"
               value={loading ? '---' : formatCurrency(summary?.totalIncome || 0)}
@@ -137,7 +152,7 @@ export default function Dashboard() {
               color="success"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="Total Expense"
               value={loading ? '---' : formatCurrency(Math.abs(summary?.totalExpense || 0))}
@@ -146,7 +161,7 @@ export default function Dashboard() {
               color="error"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="Transaction Count"
               value={loading ? '---' : summary?.totalTransactions || 0}
@@ -158,7 +173,7 @@ export default function Dashboard() {
         </Grid>
 
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <ChartCard
               title="Monthly Income vs. Expense"
               chartType="bar"
@@ -167,7 +182,7 @@ export default function Dashboard() {
               height={300}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <ChartCard
               title="Spending by Category"
               chartType="doughnut"
@@ -189,7 +204,7 @@ export default function Dashboard() {
         </Box>
 
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Recurring Payments</Typography>
@@ -209,9 +224,9 @@ export default function Dashboard() {
                         label: 'Amount', 
                         minWidth: 100,
                         align: 'right' as const,
-                        format: (value: number) => (
+                        format: (value: unknown) => (
                           <Typography variant="body2" fontWeight="bold">
-                            {formatCurrency(Math.abs(value))}
+                            {formatCurrency(Math.abs(value as number))}
                           </Typography>
                         ),
                       },
@@ -219,7 +234,7 @@ export default function Dashboard() {
                         id: 'nextDueDate', 
                         label: 'Next Due Date', 
                         minWidth: 100,
-                        format: (value: string) => value ? format(new Date(value), 'MMM dd, yyyy') : 'N/A',
+                        format: (value: unknown) => (value as string) ? format(new Date(value as string), 'MMM dd, yyyy') : 'N/A',
                       },
                     ]}
                     rows={summary.recurringPayments}

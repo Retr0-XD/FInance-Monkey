@@ -27,6 +27,25 @@ services:
       - key: PORT
         value: 10000
 
+  - type: web
+    name: finance-monkey-frontend
+    env: docker
+    plan: free
+    autoDeploy: true
+    dockerfilePath: ./Dockerfile
+    rootDir: frontend
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://finance-monkey-backend.onrender.com/api
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
 databases:
   - name: finance-monkey-db
     databaseName: finance_monkey
